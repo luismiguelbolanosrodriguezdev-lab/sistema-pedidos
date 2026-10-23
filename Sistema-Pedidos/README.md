@@ -7,7 +7,8 @@ Sistema web para gestión de pedidos y control de producción.
 - HTML
 - CSS
 - JavaScript
-- Firebase Firestore
+- Node
+- SQL
 
 ## Estado
 

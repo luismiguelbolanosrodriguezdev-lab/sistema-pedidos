@@ -4,36 +4,36 @@ const cors = require("cors");
 app.use(cors());
 app.use(express.json());
 
-const productos = [
+const products = [
     {
       id: 1,
-      nombre: "hamburCHIKIguesa",
-      precio: 25,
+      name: "hamburCHIKIguesa",
+      price: 25,
     },{
       id: 2,
-      nombre: "pizza",
-      precio: 15,
+      name: "pizza",
+      price: 15,
     },{
       id: 3,
-      nombre: "salchipapa",
-      precio: 20,
+      name: "salchipapa",
+      price: 20,
     }
   ]
 
 app.post("/api/productos", (req, res) => {
-  const {nombre, precio} = req.body;
+  const {name, price} = req.body;
 
-  if(!nombre || !precio){
-   return res.status(400).json({error: "Rellna los campos"})
+  if(!name || !price){
+   return res.status(400).json({error: "Rellena los campos"})
   }
 
-const nuevoProducto = {
-  id: productos.length + 1,
-  nombre: nombre,
-  precio: precio,
+const newProduct = {
+  id: products.length + 1,
+  name: name,
+  price: price,
 }
-productos.push(nuevoProducto);
-res.status(201).json(nuevoProducto);
+products.push(newProduct);
+res.status(201).json(newProduct);
 })
 
 
@@ -42,7 +42,7 @@ app.get("/hola", (req, res) => {
 });
 
 app.get("/api/productos", (req, res) => {
-  res.json(productos);
+  res.json(products);
 })
 
 app.listen(3000, () => {

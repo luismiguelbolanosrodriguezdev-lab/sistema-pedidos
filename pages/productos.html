@@ -1,13 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Productos</title>
-</head>
-<body>
-    <ul id="listaProductos"></ul>
+  </head>
+  <body>
+    <form id="formProduct">
+
+      <input type="text" id="nameProduct" placeholder="Nombre Producto"/> <br>
+      <input type="number" id="priceProduct" placeholder="Precio Product"> <br>
+      <input type="submit" value="Agregar Producto" id="buttonCreateProduct">
+
+    </form>
+
+    <div>
+      <ul id="listProducts"></ul>
+    </div>
 
     <script src="/js/productos.js"></script>
-</body>
+  </body>
 </html>

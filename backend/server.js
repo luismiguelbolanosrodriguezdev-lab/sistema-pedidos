@@ -7,15 +7,15 @@ app.use(express.json());
 const products = [
     {
       id: 1,
-      name: "hamburCHIKIguesa",
+      name: "Fresas Tradicionales",
       price: 25,
     },{
       id: 2,
-      name: "pizza",
+      name: "Fresas especiales",
       price: 15,
     },{
       id: 3,
-      name: "salchipapa",
+      name: "Fresas con chocolate",
       price: 20,
     }
   ]
@@ -46,5 +46,5 @@ app.get("/api/productos", (req, res) => {
 })
 
 app.listen(3000, () => {
-  console.log("Servidor funcionando en el puerto 3000");
+  console.log("Servidor activo en el puerto 3000");
 });

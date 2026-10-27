@@ -29,7 +29,7 @@ async function createProduct(event) {
   const price = Number(document.getElementById("priceProduct").value);
 
   if (!name || !price) {
-    window.alert("Rellena los campos correctamenre");
+    window.alert("Rellena los campos correctamente");
     return;
   }
   try {
@@ -40,13 +40,13 @@ async function createProduct(event) {
     });
 
     if (!response.ok) {
-      throw new Error("No se puedo crear el producto" + response.status);
+      throw new Error("No se pudo crear el producto " + response.status);
     }
     loadProducts();
     event.target.reset();
   } catch (error) {
     console.error(error);
-    window.alert("Error creating product: " + error);
+    window.alert("Error al crear el producto: " + error);
   }
 }
 

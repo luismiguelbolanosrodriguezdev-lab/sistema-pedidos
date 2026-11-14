@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const pool = require("./db");
 app.use(cors());
 app.use(express.json());
 
@@ -41,8 +42,15 @@ app.get("/hola", (req, res) => {
   res.send("Servidor activo");
 });
 
-app.get("/api/productos", (req, res) => {
-  res.json(products);
+app.get("/api/productos", async (req, res) => {
+  try{
+    const result = await pool.query("SELECT id, name, price FROM products WHERE is_active = TRUE;");
+    res.json(result.rows);
+    console.log(result.rows);
+  } catch(error){
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener los productos" });
+  }
 })
 
 app.listen(3000, () => {

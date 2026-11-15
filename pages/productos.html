@@ -7,15 +7,24 @@
   </head>
   <body>
     <form id="formProduct">
-
-      <input type="text" id="nameProduct" placeholder="Nombre Producto"/> <br>
-      <input type="number" id="priceProduct" placeholder="Precio Producto"> <br>
-      <input type="submit" value="Agregar Producto" id="buttonCreateProduct">
-
+      <input type="text" id="nameProduct" placeholder="Nombre Producto" />
+      <br />
+      <input type="number" id="priceProduct" placeholder="Precio Producto" />
+      <br />
+      <input type="submit" value="Agregar Producto" id="buttonCreateProduct" />
     </form>
 
     <div>
-      <ul id="listProducts"></ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody"></tbody>
+      </table>
     </div>
 
     <script src="/js/productos.js"></script>

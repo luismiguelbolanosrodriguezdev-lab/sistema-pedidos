@@ -131,6 +131,17 @@ async function createProduct(event) {
       : `http://localhost:3000/api/productos/${editingId}`;
   const method = editingId === null ? "POST" : "PUT";
 
+  if (editingId !== null) {
+  const original = productsCache.find((p) => p.id === editingId);
+  if (original.name === name && original.price === price){
+    window.alert("No hiciste cambios en el producto");
+    resetForm();
+    return;
+  }
+
+} 
+
+
   try {
     const response = await fetch(url, {
       method: method,

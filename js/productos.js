@@ -13,7 +13,7 @@ function resetForm() {
 
 async function loadProducts() {
   try {
-    const responseProducts = await fetch("http://localhost:3000/api/productos");
+    const responseProducts = await fetch("http://localhost:3000/api/productos?includeInactive=true");
 
     if (!responseProducts.ok) {
       throw new Error(
@@ -36,11 +36,14 @@ async function loadProducts() {
 
       const actionsCell = document.createElement("td");
 
-      const deactivateButton = document.createElement("input");
-      deactivateButton.type = "button";
-      deactivateButton.value = "Desactivar";
-      deactivateButton.dataset.id = product.id;
-      deactivateButton.dataset.action = "deactivate";
+      const statusCell = document.createElement("td");
+      statusCell.textContent = product.is_active ? "Activo" : "Inactivo";
+
+      const toggleButton = document.createElement("input");
+      toggleButton.type = "button";
+      toggleButton.value = product.is_active ? "Desactivar" : "Activar";
+      toggleButton.dataset.id = product.id;
+      toggleButton.dataset.action = product.is_active ? "deactivate" : "activate";
 
       const editButton = document.createElement("input");
       editButton.type = "button";
@@ -48,11 +51,12 @@ async function loadProducts() {
       editButton.dataset.id = product.id;
       editButton.dataset.action = "edit";
 
-      actionsCell.appendChild(deactivateButton);
+      actionsCell.appendChild(toggleButton);
       actionsCell.appendChild(editButton);
       row.appendChild(nameCell);
       row.appendChild(priceCell);
       row.appendChild(actionsCell);
+      row.appendChild(statusCell);
       tbody.appendChild(row);
     });
   } catch (error) {
@@ -60,6 +64,36 @@ async function loadProducts() {
     console.error(error);
   }
 }
+
+async function setProductActive(id, isActive) {
+  try {
+    try {
+        const response = await fetch(
+          `http://localhost:3000/api/productos/${id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ is_active: isActive }),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "No se pudo actualizar el estado del producto " + response.status,
+          );
+        }
+        if (editingId === id) resetForm();
+        loadProducts();
+      }catch (error) {
+        console.error(error);
+        window.alert("No se pudo actualizar el estado del producto: " + error);
+      }
+  } catch (error) {
+    console.error(error);
+    window.alert("Error al cambiar el estado del producto: " + error);
+  }
+}
+
 
 tbody.addEventListener("click", async (event) => {
   const button = event.target;
@@ -88,31 +122,13 @@ tbody.addEventListener("click", async (event) => {
    }
    if (action === "deactivate") {
       if (!window.confirm("¿Desactivar este producto?")) return;
-
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/productos/${id}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ is_active: false }),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            "No se pudo desactivar el producto " + response.status,
-          );
-        }
-        if (editingId === id) resetForm();
-        loadProducts();
-      }catch (error) {
-        console.error(error);
-        window.alert("Error al desactivar el producto: " + error);
-      }
+      setProductActive(id, false);
    }
-  }
-);
+
+      if (action === "activate") {
+      setProductActive(id, true);
+      }
+  });
 
 async function createProduct(event) {
   event.preventDefault();
@@ -152,13 +168,6 @@ async function createProduct(event) {
     if (!response.ok) {
       throw new Error("No se pudo guardar el producto " + response.status);
     }
-/*
-    const product = await response.json();
-    if (product.name == name && product.price == price) {
-      window.alert("No se realizaron cambios en el producto");
-      return;
-    }
-*/
     loadProducts();
     resetForm();
   } catch (error) {

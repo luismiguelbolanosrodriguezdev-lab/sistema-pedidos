@@ -24,10 +24,14 @@ function isValidProduct(name, price) {
 
 
 app.get("/api/productos", async (req, res) => {
+  const includeInactive = req.query.includeInactive === "true";
+
+  const sql = includeInactive
+    ? "SELECT id, name, price, is_active FROM products WHERE business_id = $1 ORDER BY id"
+    : "SELECT id, name, price, is_active FROM products WHERE business_id = $1 AND is_active = TRUE ORDER BY id";
+
   try {
-    const result = await pool.query(
-      "SELECT id, name, price FROM products WHERE is_active = TRUE ORDER BY id;",
-    );
+    const result = await pool.query(sql, [1]);
     res.json(result.rows);
   } catch (error) {
     console.error(error);

@@ -180,4 +180,3 @@ document
 
 loadProducts();
 document.getElementById("cancelEdit").addEventListener("click", resetForm);
-

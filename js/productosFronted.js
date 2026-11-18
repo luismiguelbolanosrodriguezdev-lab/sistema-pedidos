@@ -156,8 +156,6 @@ async function createProduct(event) {
   }
 
 } 
-
-
   try {
     const response = await fetch(url, {
       method: method,
@@ -182,3 +180,4 @@ document
 
 loadProducts();
 document.getElementById("cancelEdit").addEventListener("click", resetForm);
+

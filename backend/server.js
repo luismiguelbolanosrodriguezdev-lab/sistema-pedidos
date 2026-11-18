@@ -1,4 +1,34 @@
 const express = require("express");
+const cors = require("cors");
+const productsRouter = require("./routes/productsBackend");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use("/api/productos", productsRouter);
+
+app.get("/hola", (req, res) => {
+  res.send("Servidor activo");
+});
+
+app.listen(3000, () => {
+  console.log("Servidor activo en el puerto 3000");
+});
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+const express = require("express");
 const app = express();
 const cors = require("cors");
 const pool = require("./db");
@@ -22,7 +52,7 @@ function isValidProduct(name, price) {
 }
 
 
-
+/*
 app.get("/api/productos", async (req, res) => {
   const includeInactive = req.query.includeInactive === "true";
 
@@ -37,9 +67,9 @@ app.get("/api/productos", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error al obtener los productos" });
   }
-});
+}); 
 
-app.post("/api/productos", async (req, res) => {
+ app.post("/api/productos", async (req, res) => {
   const { name, price } = req.body ?? {};
 
   if (!isValidProduct(name, price)) {
@@ -57,9 +87,9 @@ app.post("/api/productos", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error al crear el producto" });
   }
-});
+ });
 
-app.put("/api/productos/:id", async (req, res) => {
+ app.put("/api/productos/:id", async (req, res) => {
   const id = Number(req.params.id);
   const { name, price } = req.body ?? {};
 
@@ -84,9 +114,9 @@ app.put("/api/productos/:id", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error al actualizar el producto" });
   }
-});
+ });
 
-app.patch("/api/productos/:id", async (req, res) => {
+ app.patch("/api/productos/:id", async (req, res) => {
   const id = Number(req.params.id);
   const { is_active } = req.body ?? {};
 
@@ -108,12 +138,13 @@ app.patch("/api/productos/:id", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Error al Desactivar o Activar el producto" });
   }
-});
+ });
 
-app.get("/hola", (req, res) => {
+ app.get("/hola", (req, res) => {
   res.send("Servidor activo");
-});
+ });
 
-app.listen(3000, () => {
+ app.listen(3000, () => {
   console.log("Servidor activo en el puerto 3000");
-});
+ });
+*/

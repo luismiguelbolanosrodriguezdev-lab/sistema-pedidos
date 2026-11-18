@@ -16,24 +16,64 @@ function isValidRegister(businessName, ownerName, email, password) {
     email.trim().toLocaleLowerCase() !== "" &&
     /^\S+@\S+\.\S+$/.test(email) &&
     typeof password === "string" &&
-    password.length > 8 &&
+    password.length >= 8 &&
     password.length <= 72
   );
 }
 
 router.post("/register", async (req, res) => {
-    const { businessName, ownerName, email, password } = req.body ?? {};
+  const { businessName, ownerName, email, password } = req.body ?? {};
 
-    if (!isValidRegister(businessName, ownerName, email, password)) {
+  if (!isValidRegister(businessName, ownerName, email, password)) {
     return res.status(400).json({ error: "Los datos ingresados no son válidos" });
   }
-  try {
-    const passwordHash = await bcrypt.hash(password, 10)
-    
-  }catch (error) {
-    console.error(error);
-  }
   
-});
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanBusinessName = businessName.trim();
+  const cleanOwnerName = ownerName.trim();
 
+    const passwordHash = await bcrypt.hash(password, 10);
+  // jejejeje
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const businessResult = await client.query(
+      "INSERT INTO businesses (name) VALUES ($1) RETURNING id",
+      [cleanBusinessName],
+    );
+    const businessId = businessResult.rows[0].id;
+
+    // 1. inserta al dueño en users: business_id, name, email, password_hash y rol 'owner'
+    //    con RETURNING id, name, email, role (nunca devuelvas el hash)
+
+    const clientresult = await client.query(
+       "INSERT INTO users (business_id, name, email, password_hash, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role", [businessId, cleanOwnerName, cleanEmail, passwordHash, "owner"],
+    )
+
+    // 2. responde 201 con el usuario creado
+    await client.query("COMMIT");
+    console.log("Usuario registrado exitosamente:");
+    res.status(201).json(clientresult.rows[0]);
+    
+
+   
+  } catch (error) {
+    
+
+    // 3. si error.code === "23505" (correo repetido), responde 409 con un mensaje
+    // 4. si no, error en consola y 500
+    await client.query("ROLLBACK");
+    if (error.code === "23505"){
+      console.error("Error al registrar el usuario: correo repetido");
+      res.status(409).json({ error: "Credenciales Inválidas"})
+    } else {
+      console.error(error);
+      res.status(500).json({error: "Error al registrar el usuario"});
+    }
+    
+  } finally {
+    client.release();  }
+});
+  
 module.exports = router;

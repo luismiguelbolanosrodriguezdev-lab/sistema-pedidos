@@ -3,7 +3,8 @@ const pool = require("../db");
 
 const router = express.Router();
 
-const BUSINESS_ID = 1; // TODO: saldrá del usuario cuando haya login
+const { requireAuth, requireRole } = require("../middleware/auth");
+
 
 function isValidId(id) {
   return Number.isInteger(id) && id > 0;
@@ -18,15 +19,20 @@ function isValidProduct(name, price) {
   );
 }
 
+router.use(requireAuth);
+
 router.get("/", async (req, res) => {
     const includeInactive = req.query.includeInactive === "true";
 
-  const sql = includeInactive
+    if (includeInactive && !["owner", "admin"].includes(req.user.role)) {
+  return res.status(403).json({ error: "No tienes permiso para esta acción" });
+}
+    const sql = includeInactive
     ? "SELECT id, name, price, is_active FROM products WHERE business_id = $1 ORDER BY id"
     : "SELECT id, name, price, is_active FROM products WHERE business_id = $1 AND is_active = TRUE ORDER BY id";
 
   try {
-    const result = await pool.query(sql, [1]);
+    const result = await pool.query(sql, [req.user.businessId]);
     res.json(result.rows);
   } catch (error) {
     console.error(error);
@@ -34,7 +40,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireRole("owner", "admin"), async (req, res) => {
   const { name, price } = req.body ?? {};
 
   if (!isValidProduct(name, price)) {
@@ -44,8 +50,8 @@ router.post("/", async (req, res) => {
 
   try {
     const result = await pool.query(
-      "INSERT INTO products (business_id, name, price) VALUES ($1, $2, $3) RETURNING id, name, price",
-      [1, cleanName, price],
+      "INSERT INTO products (business_id, name, price) VALUES ($1, $2, $3) RETURNING id, name, price, is_active",
+      [req.user.businessId, cleanName, price],
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -54,7 +60,7 @@ router.post("/", async (req, res) => {
   }
  });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireRole("owner", "admin"), async (req, res) => {
   const id = Number(req.params.id);
   const { name, price } = req.body ?? {};
 
@@ -66,8 +72,8 @@ router.put("/:id", async (req, res) => {
 
   try {
     const result = await pool.query(
-      "UPDATE products SET name = $1, price = $2, updated_at = now() WHERE id = $3 AND business_id = $4 RETURNING id, name, price",
-      [cleanName, price, id, BUSINESS_ID],
+      "UPDATE products SET name = $1, price = $2, updated_at = now() WHERE id = $3 AND business_id = $4 RETURNING id, name, price, is_active",
+      [cleanName, price, id, req.user.businessId],
     );
 
     if (result.rows.length === 0) {
@@ -81,18 +87,20 @@ router.put("/:id", async (req, res) => {
   }
  });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", requireRole("owner", "admin"), async (req, res) => {
   const id = Number(req.params.id);
   const { is_active } = req.body ?? {};
 
-  if (!Number.isInteger(id) || id <= 0 || typeof is_active !== "boolean"){
-   return res.status(400).json({error: "id o is_active no validos"}) 
+  
+
+  if (!isValidId(id) || typeof is_active !== "boolean"){
+   return res.status(400).json({error: "id o is_active no válidos"}) 
   }
 
   try {
     const result = await pool.query(
       "UPDATE products SET is_active = $1, updated_at = now() WHERE id = $2 AND business_id = $3 RETURNING id, name, price, is_active",
-      [is_active, id, BUSINESS_ID],
+      [is_active, id, req.user.businessId],
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Producto no encontrado" });

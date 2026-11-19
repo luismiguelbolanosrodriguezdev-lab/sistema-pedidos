@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const pool = require("../db");
 
 const jwt = require("jsonwebtoken");
+const { requireAuth }  = require("../middleware/auth");
 
 if (!process.env.JWT_SECRET) {
   throw new Error("Falta JWT_SECRET en el archivo .env");
@@ -123,5 +124,10 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Error al iniciar sesión" });
   }
 });
+
+router.get("/me", requireAuth, (req, res) => {
+  res.json({ user: req.user});
+})
+
 
 module.exports = router;

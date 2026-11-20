@@ -1,6 +1,7 @@
 const tbody = document.getElementById("productsTableBody");
 const form = document.getElementById("formProduct");
-const userInfo = document.getElementById("userInfo");
+const userName = document.getElementById("userName");
+const userRole = document.getElementById("userRole");
 const logoutButton = document.getElementById("logoutButton");
 
 
@@ -177,7 +178,8 @@ async function init() {
   if (!user) return;
 
   canManage = ["owner", "admin"].includes(user.role);
-  userInfo.textContent = `${user.name} (${user.role})`;
+  userName.textContent = `Hola, ${user.name}`;
+  userRole.textContent = `Rol: ${user.role}`
   form.hidden = !canManage;
 
   loadProducts();

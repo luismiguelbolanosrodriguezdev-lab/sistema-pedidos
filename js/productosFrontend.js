@@ -1,10 +1,16 @@
 const tbody = document.getElementById("productsTableBody");
+const form = document.getElementById("formProduct");
+const userInfo = document.getElementById("userInfo");
+const logoutButton = document.getElementById("logoutButton");
+
 
 let editingId = null;
 let productsCache = [];
+let canManage = false;
 
 
 function resetForm() {
+  form.reset()
   document.getElementById("formProduct").reset()
   editingId = null
   document.getElementById("buttonCreateProduct").value = "Agregar Producto"
@@ -13,14 +19,17 @@ function resetForm() {
 
 async function loadProducts() {
   try {
-    const responseProducts = await fetch("http://localhost:3000/api/productos?includeInactive=true");
+    const path = canManage
+      ? "/api/productos?includeInactive=true"
+      : "/api/productos";
+    const response = await apiFetch(path);
 
-    if (!responseProducts.ok) {
+    if (!response.ok) {
       throw new Error(
-        "No se pudo obtener la lista de productos " + responseProducts.status,
+        "No se pudo obtener la lista de productos " + response.status,
       );
     }
-    const products = await responseProducts.json();
+    const products = await response.json();
     productsCache = products;
 
     tbody.innerHTML = "";
@@ -36,9 +45,7 @@ async function loadProducts() {
 
       const actionsCell = document.createElement("td");
 
-      const statusCell = document.createElement("td");
-      statusCell.textContent = product.is_active ? "Activo" : "Inactivo";
-
+      if (canManage){
       const toggleButton = document.createElement("input");
       toggleButton.type = "button";
       toggleButton.value = product.is_active ? "Desactivar" : "Activar";
@@ -53,6 +60,12 @@ async function loadProducts() {
 
       actionsCell.appendChild(toggleButton);
       actionsCell.appendChild(editButton);
+      }
+
+      const statusCell = document.createElement("td");
+      statusCell.textContent = product.is_active ? "Activo" : "Inactivo";
+
+      
       row.appendChild(nameCell);
       row.appendChild(priceCell);
       row.appendChild(actionsCell);
@@ -60,42 +73,31 @@ async function loadProducts() {
       tbody.appendChild(row);
     });
   } catch (error) {
-    window.alert("Error al cargar los productos " + error);
     console.error(error);
+    window.alert("Error al cargar los productos " + error);
   }
 }
 
 async function setProductActive(id, isActive) {
   try {
-    try {
-        const response = await fetch(
-          `http://localhost:3000/api/productos/${id}`,
-          {
+    const response = await apiFetch(`/api/productos/${id}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ is_active: isActive }),
-          },
-        );
+          });
 
-        if (!response.ok) {
+    if (!response.ok) {
           throw new Error(
-            "No se pudo actualizar el estado del producto " + response.status,
-          );
+            "No se pudo actualizar el estado del producto " + response.status);
         }
         if (editingId === id) resetForm();
         loadProducts();
-      }catch (error) {
-        console.error(error);
-        window.alert("No se pudo actualizar el estado del producto: " + error);
-      }
-  } catch (error) {
+      } catch (error) {
     console.error(error);
     window.alert("Error al cambiar el estado del producto: " + error);
   }
 }
 
-
-tbody.addEventListener("click", async (event) => {
+tbody.addEventListener("click", (event) => {
   const button = event.target;
   const action = button.dataset.action;
   if (!action) return;
@@ -105,29 +107,24 @@ tbody.addEventListener("click", async (event) => {
    if (action === "edit") {
     if (!window.confirm("¿Desea editar este producto?")) return;
     const product = productsCache.find((p) => p.id === id);
-    try {
-      document.getElementById("cancelEdit").hidden = false;
+    if (!product) return;
 
       
       document.getElementById("nameProduct").value = product.name;
       document.getElementById("priceProduct").value = product.price;
-      editingId = id;
-
       document.getElementById("buttonCreateProduct").value = "Guardar Cambios";
-      
-    }catch (error) {
-      console.error(error);
-      window.alert("Error al cargar el producto para editar: " + error);
-    }
-   }
-   if (action === "deactivate") {
+      document.getElementById("cancelEdit").hidden = false;
+      editingId = id;
+}
+
+  if (action === "deactivate") {
       if (!window.confirm("¿Desactivar este producto?")) return;
       setProductActive(id, false);
    }
 
-      if (action === "activate") {
+    if (action === "activate") {
       setProductActive(id, true);
-      }
+    }
   });
 
 async function createProduct(event) {
@@ -141,27 +138,24 @@ async function createProduct(event) {
     return;
   }
 
-  const url =
-    editingId === null
-      ? "http://localhost:3000/api/productos"
-      : `http://localhost:3000/api/productos/${editingId}`;
-  const method = editingId === null ? "POST" : "PUT";
-
   if (editingId !== null) {
   const original = productsCache.find((p) => p.id === editingId);
-  if (original.name === name && original.price === price){
+  if (original && original.name === name && original.price === price){
     window.alert("No hiciste cambios en el producto");
     resetForm();
     return;
   }
+}
 
-} 
+  const path =
+    editingId === null ? "/api/productos" : `/api/productos/${editingId}`;
+  const method = editingId === null ? "POST" : "PUT";
+
   try {
-    const response = await fetch(url, {
+    const response = await apiFetch(path, {
       method: method,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, price }),
-    });
+});
 
     if (!response.ok) {
       throw new Error("No se pudo guardar el producto " + response.status);
@@ -174,9 +168,19 @@ async function createProduct(event) {
   }
 }
 
-document
-  .getElementById("formProduct")
-  .addEventListener("submit", createProduct);
-
-loadProducts();
+form.addEventListener("submit", createProduct);
 document.getElementById("cancelEdit").addEventListener("click", resetForm);
+logoutButton.addEventListener("click", logout);
+
+async function init() {
+  const user = await requireLogin();
+  if (!user) return;
+
+  canManage = ["owner", "admin"].includes(user.role);
+  userInfo.textContent = `${user.name} (${user.role})`;
+  form.hidden = !canManage;
+
+  loadProducts();
+}
+
+init();

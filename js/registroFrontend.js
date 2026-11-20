@@ -1,5 +1,3 @@
-const API_URL = "http://localhost:3000";
-
 const form = document.getElementById("formRegister");
 const message = document.getElementById("registerMessage");
 const button = document.getElementById("registerButton");
@@ -18,6 +16,7 @@ async function registerUser(event) {
     message.textContent = "Las contraseñas no coinciden";
     return;
   }
+
   button.disabled = true;
   try {
     const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -31,8 +30,10 @@ async function registerUser(event) {
         message.textContent = data.error || "Error al registrar el usuario";
         return;
     }
+    
     message.textContent = "Cuenta creada exitosamente, ya puedes iniciar sesión.";
     form.reset();
+    setTimeout(() => { window.location.href = "index.html"; }, 1500);
   } catch (error) {
     console.error(error);
     message.textContent = "No se pudo conectar con el servidor. Inténtalo de nuevo.";

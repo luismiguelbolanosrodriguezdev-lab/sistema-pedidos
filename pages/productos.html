@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/css/styles_productos.css" />
   </head>
   <body>
+    <p id="userInfo"></p>
+    <input type="button" id="logoutButton" value="Cerrar sesión" />
     <form id="formProduct">
       <input type="text" id="nameProduct" placeholder="Nombre Producto" />
       <br />
@@ -30,7 +32,8 @@
         <tbody id="productsTableBody"></tbody>
       </table>
     </div>
-
+    
+    <script src="../js/api.js"></script>
     <script src="../js/productosFrontend.js"></script>
   </body>
 </html>

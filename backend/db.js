@@ -8,4 +8,8 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
+pool.on("error", (err) => {
+  console.error("Error inesperado en una conexión inactiva:", err.message);
+});
+
 module.exports = pool;

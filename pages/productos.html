@@ -10,9 +10,9 @@
     <p id="userInfo"></p>
     <input type="button" id="logoutButton" value="Cerrar sesión" />
     <form id="formProduct">
-      <input type="text" id="nameProduct" placeholder="Nombre Producto" />
+      <input type="text" id="nameProduct" placeholder="Nombre Producto" maxlength="100" />
       <br />
-      <input type="number" id="priceProduct" placeholder="Precio Producto (sin punto ni coma)" />
+      <input type="number" id="priceProduct" placeholder="Precio Producto (sin punto ni coma)" min="1" max="100000000" step="1"/>
       <br />
       <input type="submit" value="Agregar Producto" id="buttonCreateProduct" />
       <br />

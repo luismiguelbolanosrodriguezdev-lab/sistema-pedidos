@@ -6,16 +6,26 @@ const router = express.Router();
 const { requireAuth, requireRole } = require("../middleware/auth");
 
 
+const MAX_NAME_LENGTH = 100;
+const MAX_PRICE = 100000000;
+const MAX_ID = 2147483647; // el mayor entero que acepta PostgreSQL en una columna INTEGER
+
+function parseId(value) {
+  return /^\d+$/.test(value) ? Number(value) : NaN;
+}
+
 function isValidId(id) {
-  return Number.isInteger(id) && id > 0;
+  return Number.isInteger(id) && id > 0 && id <= MAX_ID;
 }
 
 function isValidProduct(name, price) {
   return (
     typeof name === "string" &&
     name.trim() !== "" &&
+    name.trim().length <= MAX_NAME_LENGTH &&
     Number.isInteger(price) &&
-    price > 0
+    price > 0 &&
+    price <= MAX_PRICE
   );
 }
 
@@ -61,7 +71,7 @@ router.post("/", requireRole("owner", "admin"), async (req, res) => {
  });
 
 router.put("/:id", requireRole("owner", "admin"), async (req, res) => {
-  const id = Number(req.params.id);
+  const id = parseId(req.params.id);
   const { name, price } = req.body ?? {};
 
   if (!isValidProduct(name, price) || !isValidId(id)) {
@@ -88,7 +98,7 @@ router.put("/:id", requireRole("owner", "admin"), async (req, res) => {
  });
 
 router.patch("/:id", requireRole("owner", "admin"), async (req, res) => {
-  const id = Number(req.params.id);
+  const id = parseId(req.params.id);
   const { is_active } = req.body ?? {};
 
   

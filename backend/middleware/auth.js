@@ -10,7 +10,7 @@ async function requireAuth(req, res, next) {
 
   let payload;
   try {
-    payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"] });
+    payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ["HS256"], maxAge: "8h", });
   } catch (error) {
     return res.status(401).json({error: "Sesión inválida o vencida"})
   }
@@ -26,7 +26,6 @@ async function requireAuth(req, res, next) {
       [id],
     );
     const user = result.rows[0];
-    // 3. si !user o !user.is_active: 401
     if (!user || !user.is_active){
         return res.status(401).json({error: "Sesión inválida o vencida"});
     }
